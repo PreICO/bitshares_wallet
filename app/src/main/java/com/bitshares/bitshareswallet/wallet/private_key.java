@@ -1,13 +1,12 @@
 package com.bitshares.bitshareswallet.wallet;
 
+import android.os.Build;
+import android.os.Process;
 import android.util.Log;
 
-import com.bitshares.bitshareswallet.wallet.fc.crypto.sha512_object;
-import com.bitshares.bitshareswallet.wallet.fc.io.raw_type;
-import com.bitshares.bitshareswallet.wallet.graphene.chain.compact_signature;
 import com.bitshares.bitshareswallet.wallet.fc.crypto.sha256_object;
-import com.mrd.bitlib.bitcoinj.Base58;
-import com.mrd.bitlib.crypto.HmacPRNG;
+import com.bitshares.bitshareswallet.wallet.fc.crypto.sha512_object;
+import com.bitshares.bitshareswallet.wallet.graphene.chain.compact_signature;
 import com.mrd.bitlib.crypto.InMemoryPrivateKey;
 import com.mrd.bitlib.crypto.RandomSource;
 import com.mrd.bitlib.crypto.SignedMessage;
@@ -17,28 +16,24 @@ import com.mrd.bitlib.crypto.ec.Point;
 import com.mrd.bitlib.util.Sha256Hash;
 
 import org.bitcoinj.core.ECKey;
-import org.spongycastle.asn1.ASN1InputStream;
-import org.spongycastle.asn1.ASN1Integer;
-import org.spongycastle.asn1.ASN1Sequence;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.spongycastle.jce.spec.ECNamedCurveParameterSpec;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 
@@ -112,27 +107,71 @@ public class private_key {
 
     public compact_signature sign_compact(sha256_object digest, boolean require_canonical ) {
         compact_signature signature = null;
-        try {
-            final HmacPRNG prng = new HmacPRNG(key_data);
-            RandomSource randomSource = bytes -> prng.nextBytes(bytes);
 
-            while (true) {
-                Log.w("HmacPRNG", "CYCLE");
-                InMemoryPrivateKey inMemoryPrivateKey = new InMemoryPrivateKey(key_data);
-                SignedMessage signedMessage = inMemoryPrivateKey.signHash(new Sha256Hash(digest.hash), randomSource);
-                byte[] byteCompact = signedMessage.bitcoinEncodingOfSignature();
-                signature = new compact_signature(byteCompact);
+        SecureRandom secureRandom = new SecureRandom();
+        secureRandom.setSeed(generateSeed());
+        RandomSource randomSource = secureRandom::nextBytes;
 
-                boolean bResult = public_key.is_canonical(signature);
-                if (bResult) {
-                    break;
-                }
+        while (true) {
+            Log.w("HmacPRNG", "CYCLE");
+            InMemoryPrivateKey inMemoryPrivateKey = new InMemoryPrivateKey(key_data);
+            SignedMessage signedMessage = inMemoryPrivateKey.signHash(new Sha256Hash(digest.hash), randomSource);
+            byte[] byteCompact = signedMessage.bitcoinEncodingOfSignature();
+            signature = new compact_signature(byteCompact);
+
+            boolean bResult = public_key.is_canonical(signature);
+            if (bResult) {
+                break;
             }
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
         }
 
         return signature;
+    }
+
+    private static final byte[] BUILD_FINGERPRINT_AND_DEVICE_SERIAL = getBuildFingerprintAndDeviceSerial();
+
+    private static byte[] getBuildFingerprintAndDeviceSerial() {
+        StringBuilder result = new StringBuilder();
+        String fingerprint = Build.FINGERPRINT;
+        if (fingerprint != null) {
+            result.append(fingerprint);
+        }
+        String serial = getDeviceSerialNumber();
+        if (serial != null) {
+            result.append(serial);
+        }
+        try {
+            return result.toString().getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException("UTF-8 encoding not supported");
+        }
+    }
+
+    private static String getDeviceSerialNumber() {
+        // We're using the Reflection API because Build.SERIAL is only available
+        // since API Level 9 (Gingerbread, Android 2.3).
+        try {
+            return (String) Build.class.getField("SERIAL").get(null);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static byte[] generateSeed() {
+        try {
+            ByteArrayOutputStream seedBuffer = new ByteArrayOutputStream();
+            DataOutputStream seedBufferOut =
+                    new DataOutputStream(seedBuffer);
+            seedBufferOut.writeLong(System.currentTimeMillis());
+            seedBufferOut.writeLong(System.nanoTime());
+            seedBufferOut.writeInt(Process.myPid());
+            seedBufferOut.writeInt(Process.myUid());
+            seedBufferOut.write(BUILD_FINGERPRINT_AND_DEVICE_SERIAL);
+            seedBufferOut.close();
+            return seedBuffer.toByteArray();
+        } catch (IOException e) {
+            throw new SecurityException("Failed to generate seed", e);
+        }
     }
 
     public static private_key from_seed(String strSeed) {

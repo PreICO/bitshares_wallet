@@ -42,6 +42,8 @@ import com.bitshares.bitshareswallet.wallet.graphene.chain.object_id;
 import com.bitshares.bitshareswallet.wallet.graphene.chain.signed_transaction;
 import com.bituniverse.utils.NumericUtil;
 import com.good.code.starts.here.dialog.select.TokenSelectDialog;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kaopiz.kprogresshud.KProgressHUD;
 
 import java.math.BigDecimal;
@@ -78,6 +80,8 @@ public class SendFragment extends BaseFragment {
 
     private List<String> symbolList;
     private asset lastFeeAsset;
+
+    private Gson gson = new Gson();
 
     public SendFragment() {}
 
@@ -326,7 +330,12 @@ public class SendFragment extends BaseFragment {
                         throwable.printStackTrace();
                         if (getActivity() != null && getActivity().isFinishing() == false) {
                             mProcessHud.dismiss();
-                            Toast.makeText(getActivity(), throwable.getMessage(), Toast.LENGTH_LONG).show();
+                            try {
+                                JsonObject jsonObject = gson.fromJson(throwable.getMessage(), JsonObject.class);
+                                Toast.makeText(getActivity(), jsonObject.getAsJsonPrimitive("message").getAsString(), Toast.LENGTH_LONG).show();
+                            } catch (Exception ex) {
+                                Toast.makeText(getActivity(), throwable.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                            }
                         }
                     } else {
                         throw Exceptions.propagate(throwable);
