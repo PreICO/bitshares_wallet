@@ -82,6 +82,8 @@
     <string name="title_wallet">Wallet</string>
     <string name="title_quotation">Quotes</string>
     <string name="title_exchange">Exchange</string>
+    <string name="title_teller">Teller</string>
+    <string name="title_deposit">Deposit</string>
     <string name="title_buy">Buy</string>
     <string name="title_sell">Sell</string>
     <string name="title_my_orders">Orders</string>

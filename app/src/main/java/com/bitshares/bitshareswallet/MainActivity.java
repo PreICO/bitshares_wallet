@@ -213,6 +213,8 @@ implements OnFragmentInteractionListener{
         mMainFragmentPageAdapter.addFragment(mWalletFragment, "Wallet");
         //mMainFragmentPageAdapter.addFragment(mQuotationFragment, "Quotation");
         mMainFragmentPageAdapter.addFragment(mExchangeFragment, "Exchange");
+        mMainFragmentPageAdapter.addFragment(mDepositFragment, "Deposit");
+        mMainFragmentPageAdapter.addFragment(mTellerFragment, "Teller");
         mViewPager.setAdapter(mMainFragmentPageAdapter);
 
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -232,6 +234,21 @@ implements OnFragmentInteractionListener{
                     if(lastTitle == null) lastTitle = mToolbar.getTitle().toString();
                     mToolbar.setTitle("");*/
                     mBottomNavigation.setSelectedItemId(R.id.navigation_exchange);
+                    if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
+                    mToolbar.setTitle("");
+                } else if(position == 2) {
+                    /*mBottomNavigation.setSelectedItemId(R.id.navigation_quotation);
+                    if(lastTitle == null) lastTitle = mToolbar.getTitle().toString();
+                    mToolbar.setTitle("");*/
+                    mBottomNavigation.setSelectedItemId(R.id.navigation_exchange);
+                    if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
+                    mToolbar.setTitle("");
+                } else if(position == 3) {
+                    mBottomNavigation.setSelectedItemId(R.id.navigation_deposit);
+                    if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
+                    mToolbar.setTitle("");
+                } else if(position == 4) {
+                    mBottomNavigation.setSelectedItemId(R.id.navigation_teller);
                     if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
                     mToolbar.setTitle("");
                 }
@@ -392,7 +409,13 @@ implements OnFragmentInteractionListener{
                 case R.id.navigation_exchange:
                     mViewPager.setCurrentItem(1, true);
                     return true;
-                /*case R.id.navigation_exchange:
+                case R.id.navigation_deposit:
+                    mViewPager.setCurrentItem(3, true);
+                    return true;
+                case R.id.navigation_teller:
+                    mViewPager.setCurrentItem(4, true);
+                    return true;
+                    /*case R.id.navigation_exchange:
                     mViewPager.setCurrentItem(2, true);
                     return true;*/
             }

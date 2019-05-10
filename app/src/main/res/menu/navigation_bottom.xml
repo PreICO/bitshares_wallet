@@ -9,4 +9,15 @@
         android:id="@+id/navigation_exchange"
         android:icon="@mipmap/ic_tab_exchange_normal"
         android:title="@string/title_exchange" />
+
+    <item
+        android:id="@+id/deposit"
+        android:icon="@mipmap/ic_tab_deposit"
+        android:title="@string/title_deposit" />
+
+    <item
+        android:id="@+id/teller"
+        android:icon="@mipmap/ic_tab_teller"
+        android:title="@string/title_teller" />
+
 </menu>
