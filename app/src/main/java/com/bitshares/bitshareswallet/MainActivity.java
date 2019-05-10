@@ -237,17 +237,10 @@ implements OnFragmentInteractionListener{
                     if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
                     mToolbar.setTitle("");
                 } else if(position == 2) {
-                    /*mBottomNavigation.setSelectedItemId(R.id.navigation_quotation);
-                    if(lastTitle == null) lastTitle = mToolbar.getTitle().toString();
-                    mToolbar.setTitle("");*/
-                    mBottomNavigation.setSelectedItemId(R.id.navigation_exchange);
-                    if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
-                    mToolbar.setTitle("");
-                } else if(position == 3) {
                     mBottomNavigation.setSelectedItemId(R.id.navigation_deposit);
                     if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
                     mToolbar.setTitle("");
-                } else if(position == 4) {
+                } else if(position == 3) {
                     mBottomNavigation.setSelectedItemId(R.id.navigation_teller);
                     if (lastTitle == null) lastTitle = mToolbar.getTitle().toString();
                     mToolbar.setTitle("");
